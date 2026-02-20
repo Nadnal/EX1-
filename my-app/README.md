@@ -1,36 +1,266 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Document Summary App
 
-## Getting Started
+A Next.js application that allows users to upload documents, extract their content, and generate AI-powered summaries using GitHub Models API and Supabase for storage and database.
 
-First, run the development server:
+## Features
+
+- 📤 **Document Upload**: Upload TXT, PDF, DOC, DOCX files (up to 10MB)
+- 📁 **File Management**: View, list, and delete uploaded documents
+- 👁️ **Document Viewer**: Preview document content before summarizing
+- 🤖 **AI Summarization**: Generate concise summaries using GPT-4o-mini
+- 💾 **Cloud Storage**: Files stored in Supabase Object Storage
+- 🗄️ **Database**: Document metadata and summaries stored in PostgreSQL
+- 📱 **Responsive Design**: Mobile-friendly UI with Tailwind CSS
+
+## Tech Stack
+
+- **Frontend**: Next.js 16, React 19, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes (Serverless Functions)
+- **Storage**: Supabase Storage (S3-compatible)
+- **Database**: Supabase PostgreSQL
+- **AI**: GitHub Models API (GPT-4o-mini)
+- **Deployment**: Vercel
+
+## Project Structure
+
+```
+my-app/
+├── app/
+│   ├── api/              # API routes (backend)
+│   │   ├── health/       # Health check endpoint
+│   │   ├── upload/       # File upload endpoint
+│   │   ├── files/        # List files endpoint
+│   │   ├── extract/      # Extract text from document
+│   │   ├── summarize/    # AI summarization endpoint
+│   │   └── delete/       # Delete file endpoint
+│   ├── lib/              # Shared utilities
+│   │   └── supabase.ts   # Supabase client configuration
+│   ├── layout.tsx        # Root layout
+│   ├── page.tsx          # Main application page
+│   └── globals.css       # Global styles
+├── database/
+│   └── schema.sql        # Database schema
+├── public/               # Static assets
+├── .env.local            # Environment variables (not committed)
+├── .env.example          # Environment variables template
+├── next.config.ts        # Next.js configuration
+├── tailwind.config.ts    # Tailwind CSS configuration
+└── package.json          # Dependencies
+```
+
+## Setup Instructions
+
+### 1. Prerequisites
+
+- Node.js 18+ installed
+- Supabase account
+- GitHub account with access to Models API
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Configure Supabase
+
+1. Create a new project at [supabase.com](https://supabase.com)
+2. Create a storage bucket named `documents` (set to Public)
+3. Run the SQL schema from `database/schema.sql` in Supabase SQL Editor
+4. Get your project URL and anon key from Settings → API
+
+### 4. Set Environment Variables
+
+Copy `.env.example` to `.env.local` and fill in your values:
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local`:
+```
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+GITHUB_TOKEN=your-github-token
+```
+
+### 5. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Usage
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Upload a Document**:
+   - Click "Upload Document" button
+   - Select a TXT, PDF, DOC, or DOCX file
+   - File will appear in the Documents panel
+
+2. **View Document**:
+   - Click on a document in the list
+   - Content will display in the middle panel
+
+3. **Generate Summary**:
+   - With a document selected, click "Generate AI Summary"
+   - Wait 5-10 seconds for AI processing
+   - Summary appears in the right panel
+
+4. **Delete Document**:
+   - Click the ✕ button on any document
+   - Confirm deletion
+   - File and database record will be removed
+
+## API Endpoints
+
+### `GET /api/health`
+Health check endpoint
+
+**Response**:
+```json
+{
+  "ok": true,
+  "message": "Next.js backend is running"
+}
+```
+
+### `POST /api/upload`
+Upload a document
+
+**Request**: multipart/form-data with `file` field
+
+**Response**:
+```json
+{
+  "success": true,
+  "fileName": "timestamp-filename.txt",
+  "size": 1234,
+  "url": "https://..."
+}
+```
+
+### `GET /api/files`
+List all uploaded files
+
+**Response**:
+```json
+{
+  "success": true,
+  "files": [
+    {
+      "name": "file.txt",
+      "size": 1234,
+      "createdAt": "2024-01-01T00:00:00Z",
+      "url": "https://..."
+    }
+  ]
+}
+```
+
+### `POST /api/extract`
+Extract text from a document
+
+**Request**:
+```json
+{
+  "fileName": "file.txt"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "text": "extracted content...",
+  "fileName": "file.txt"
+}
+```
+
+### `POST /api/summarize`
+Generate AI summary
+
+**Request**:
+```json
+{
+  "text": "document content...",
+  "fileName": "file.txt"
+}
+```
+
+**Response**:
+```json
+{
+  "success": true,
+  "summary": "AI-generated summary..."
+}
+```
+
+### `DELETE /api/delete?fileName=file.txt`
+Delete a document
+
+**Response**:
+```json
+{
+  "success": true,
+  "message": "File deleted successfully"
+}
+```
+
+## Database Schema
+
+```sql
+CREATE TABLE documents (
+  id UUID PRIMARY KEY,
+  file_name VARCHAR(255) NOT NULL,
+  original_name VARCHAR(255) NOT NULL,
+  file_size INTEGER NOT NULL,
+  file_type VARCHAR(100) NOT NULL,
+  storage_path VARCHAR(500) NOT NULL,
+  content TEXT,
+  summary TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+## Deployment
+
+See [DEPLOYMENT.md](../DEPLOYMENT.md) for detailed deployment instructions to Vercel.
+
+Quick deploy:
+```bash
+vercel --prod
+```
+
+Don't forget to set environment variables in Vercel Dashboard!
+
+## Troubleshooting
+
+**Build errors**: Clear `.next` folder and rebuild
+```bash
+rm -rf .next
+npm run build
+```
+
+**Supabase connection errors**: 
+- Verify environment variables
+- Check Supabase project is active
+- Ensure RLS policies allow access
+
+**AI summarization fails**:
+- Verify GitHub token is valid
+- Check token has Models API access
+- Review function logs for errors
+
+## License
+
+This project is for educational purposes.
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Supabase Documentation](https://supabase.com/docs)
+- [GitHub Models](https://github.com/marketplace/models)
+- [Tailwind CSS](https://tailwindcss.com/docs)
