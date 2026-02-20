@@ -194,8 +194,9 @@ This project demonstrates a complete full-stack application workflow:
 - ✅ Security best practices
 - ✅ Comprehensive documentation
 - ✅ Deployment readiness
+- ✅ **Graceful handling of missing credentials** (can build without configuration)
 
-The application is production-ready pending actual service configuration (Supabase credentials and GitHub token).
+The application can be built and previewed without any external service configuration. Full functionality (file upload, AI summarization) requires Supabase and GitHub API credentials.
 
 ---
 

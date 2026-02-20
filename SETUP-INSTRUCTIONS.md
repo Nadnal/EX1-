@@ -2,7 +2,9 @@
 
 ## ⚠️ Important - Before Running the App
 
-The application is **fully implemented and ready to deploy**, but requires configuration of external services to function. Follow these steps to get it running.
+The application is **fully implemented and can be built/run without configuration**, but requires Supabase and GitHub API credentials for full functionality. 
+
+**Good news**: You can now build and explore the app locally without any setup! The actual features (file upload, AI summarization) will only work after you configure the services below.
 
 ## Prerequisites
 
@@ -10,7 +12,19 @@ The application is **fully implemented and ready to deploy**, but requires confi
 2. **GitHub Account** with Models API access: https://github.com/marketplace/models
 3. **Vercel Account** (Free tier): https://vercel.com
 
-## Quick Start (3 Steps)
+## Quick Preview (No Setup Required)
+
+Want to see the app UI before configuring services?
+
+```bash
+cd my-app
+npm install  # If not already done
+npm run dev
+```
+
+Open http://localhost:3000 to explore the interface. Note: File upload and AI features won't work until you configure Supabase and GitHub tokens below.
+
+## Full Setup (3 Steps for Complete Functionality)
 
 ### Step 1: Configure Supabase (5 minutes)
 
