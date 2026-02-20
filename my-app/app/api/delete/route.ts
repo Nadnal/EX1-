@@ -25,6 +25,17 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    // Delete from database
+    const { error: dbError } = await supabase
+      .from('documents')
+      .delete()
+      .eq('file_name', fileName);
+
+    if (dbError) {
+      console.error('Database delete error:', dbError);
+      // File deleted but metadata not removed - could log error
+    }
+
     return NextResponse.json({
       success: true,
       message: 'File deleted successfully'

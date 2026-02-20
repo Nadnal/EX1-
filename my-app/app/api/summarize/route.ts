@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/app/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
-    const { text } = await request.json();
+    const { text, fileName } = await request.json();
 
     if (!text) {
       return NextResponse.json(
@@ -61,6 +62,21 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json();
     const summary = data.choices[0]?.message?.content || 'No summary generated';
+
+    // Save summary to database if fileName provided
+    if (fileName) {
+      const { error: updateError } = await supabase
+        .from('documents')
+        .update({ 
+          summary: summary,
+          updated_at: new Date().toISOString()
+        })
+        .eq('file_name', fileName);
+
+      if (updateError) {
+        console.error('Database update error:', updateError);
+      }
+    }
 
     return NextResponse.json({
       success: true,

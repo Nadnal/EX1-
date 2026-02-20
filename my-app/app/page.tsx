@@ -119,7 +119,7 @@ export default function Home() {
   }
 
   async function handleSummarize() {
-    if (!fileContent) {
+    if (!fileContent || !selectedFile) {
       setStatus("Please select a file first");
       return;
     }
@@ -131,7 +131,10 @@ export default function Home() {
       const res = await fetch('/api/summarize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: fileContent }),
+        body: JSON.stringify({ 
+          text: fileContent,
+          fileName: selectedFile.name 
+        }),
       });
 
       const data = await res.json();

@@ -67,6 +67,24 @@ export async function POST(request: NextRequest) {
       .from('documents')
       .getPublicUrl(fileName);
 
+    // Save metadata to database
+    const { data: dbData, error: dbError } = await supabase
+      .from('documents')
+      .insert({
+        file_name: fileName,
+        original_name: file.name,
+        file_size: file.size,
+        file_type: file.type,
+        storage_path: data.path,
+      })
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error('Database insert error:', dbError);
+      // File uploaded but metadata not saved - could delete file or log error
+    }
+
     return NextResponse.json({
       success: true,
       fileName: fileName,
@@ -74,7 +92,8 @@ export async function POST(request: NextRequest) {
       size: file.size,
       type: file.type,
       url: urlData.publicUrl,
-      path: data.path
+      path: data.path,
+      id: dbData?.id
     });
 
   } catch (error) {

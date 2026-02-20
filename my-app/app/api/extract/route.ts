@@ -49,6 +49,19 @@ export async function POST(request: NextRequest) {
       text = text.substring(0, maxLength) + '... (truncated)';
     }
 
+    // Update database with extracted content
+    const { error: updateError } = await supabase
+      .from('documents')
+      .update({ 
+        content: text,
+        updated_at: new Date().toISOString()
+      })
+      .eq('file_name', fileName);
+
+    if (updateError) {
+      console.error('Database update error:', updateError);
+    }
+
     return NextResponse.json({
       success: true,
       text: text,
